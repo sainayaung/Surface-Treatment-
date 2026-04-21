@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Surface Treatment Factory Layout</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a; --bg2: #0f1628; --panel: #131c35; --border: #1e2d50;
+    --accent: #00d4ff; --accent2: #ff6b35; --accent3: #39ff14; --accent4: #ffd700;
+    --text: #c8d8f0; --text-dim: #5a7099;
+    --glow: 0 0 20px rgba(0,212,255,0.3);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Exo 2', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  header { background: linear-gradient(135deg,#0a0e1a 0%,#0f1e3a 50%,#0a0e1a 100%); border-bottom: 1px solid var(--border); padding: 20px 30px; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; }
+  header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg,transparent,var(--accent),transparent); animation: scanline 3s linear infinite; }
+  @keyframes scanline { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+  .header-title { font-family:'Rajdhani',sans-serif; font-size:24px; font-weight:700; letter-spacing:4px; color:var(--accent); text-shadow:0 0 30px rgba(0,212,255,0.5); text-transform:uppercase; }
+  .header-sub { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--text-dim); letter-spacing:2px; margin-top:4px; }
+  .header-badges { display:flex; gap:8px; }
+  .badge { background:var(--panel); border:1px solid var(--border); padding:5px 10px; font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--accent3); letter-spacing:1px; }
+  .nav-tabs { display:flex; gap:2px; padding:0 20px; background:var(--bg2); border-bottom:1px solid var(--border); overflow-x:auto; }
+  .tab-btn { padding:12px 18px; font-family:'Rajdhani',sans-serif; font-size:12px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--text-dim); background:transparent; border:none; border-bottom:2px solid transparent; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+  .tab-btn:hover { color:var(--text); }
+  .tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); background:rgba(0,212,255,0.05); }
+  .tab-num { font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--accent2); margin-right:5px; }
+  .main { padding:24px 30px; }
+  .section { display:none; }
+  .section.active { display:block; }
+  .section-head { margin-bottom:24px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+  .section-head h2 { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:800; letter-spacing:3px; text-transform:uppercase; color:var(--accent); }
+  .section-head p { font-size:13px; color:var(--text-dim); margin-top:6px; line-height:1.6; }
+  .factory-map { background:var(--panel); border:1px solid var(--border); padding:24px; margin-bottom:24px; position:relative; overflow:hidden; }
+  .factory-map::before { content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; }
+  .map-title { font-family:'Rajdhani',sans-serif; font-size:12px; letter-spacing:3px; color:var(--accent); text-transform:uppercase; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+  .map-title::before { content:''; width:4px; height:14px; background:var(--accent); box-shadow:var(--glow); }
+  .flow-zone { display:flex; gap:10px; align-items:stretch; margin-bottom:8px; }
+  .zone-label { writing-mode:vertical-rl; text-orientation:mixed; transform:rotate(180deg); font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:2px; color:var(--text-dim); min-width:22px; display:flex; align-items:center; justify-content:center; border-right:1px solid var(--border); padding-right:6px; }
+  .flow-steps { display:flex; gap:5px; flex-wrap:wrap; flex:1; padding:10px; border:1px solid var(--border); background:rgba(255,255,255,0.01); }
+  .flow-step { display:flex; flex-direction:column; align-items:center; gap:3px; cursor:default; }
+  .step-box { padding:7px 12px; font-family:'Rajdhani',sans-serif; font-size:11px; font-weight:600; letter-spacing:0.5px; text-align:center; border:1px solid; min-width:82px; }
+  .step-box.zone-pre { background:rgba(255,107,53,0.1); border-color:#ff6b35; color:#ff8c5a; }
+  .step-box.zone-plate { background:rgba(0,212,255,0.1); border-color:#00d4ff; color:#4de4ff; }
+  .step-box.zone-post { background:rgba(57,255,20,0.1); border-color:#39ff14; color:#6fff4a; }
+  .step-box.zone-finish { background:rgba(255,215,0,0.1); border-color:#ffd700; color:#ffe44d; }
+  .step-box.zone-waste { background:rgba(148,0,211,0.1); border-color:#9400d3; color:#b84de0; }
+  .step-num { font-family:'Share Tech Mono',monospace; font-size:8px; color:var(--text-dim); }
+  .arrow-right { width:16px; height:2px; background:var(--border); position:relative; align-self:center; flex-shrink:0; }
+  .arrow-right::after { content:'▶'; position:absolute; right:-7px; top:-6px; font-size:7px; color:var(--text-dim); }
+  .legend { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:20px; padding:12px 16px; background:var(--panel); border:1px solid var(--border); }
+  .legend-item { display:flex; align-items:center; gap:7px; font-size:11px; color:var(--text-dim); }
+  .legend-dot { width:10px; height:10px; border:1px solid; }
+  .detail-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; }
+  .detail-card { background:var(--panel); border:1px solid var(--border); overflow:hidden; transition:all 0.3s; }
+  .detail-card:hover { border-color:var(--accent); box-shadow:0 0 20px rgba(0,212,255,0.1); }
+  .card-header { padding:14px 18px; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--border); position:relative; overflow:hidden; }
+  .card-header::after { content:''; position:absolute; bottom:0; left:0; right:0; height:1px; }
+  .card-header.pre { background:rgba(255,107,53,0.08); } .card-header.pre::after { background:linear-gradient(90deg,#ff6b35,transparent); }
+  .card-header.plate { background:rgba(0,212,255,0.08); } .card-header.plate::after { background:linear-gradient(90deg,#00d4ff,transparent); }
+  .card-header.post { background:rgba(57,255,20,0.08); } .card-header.post::after { background:linear-gradient(90deg,#39ff14,transparent); }
+  .card-header.finish { background:rgba(255,215,0,0.08); } .card-header.finish::after { background:linear-gradient(90deg,#ffd700,transparent); }
+  .card-header.waste { background:rgba(148,0,211,0.08); } .card-header.waste::after { background:linear-gradient(90deg,#9400d3,transparent); }
+  .card-header.machine { background:rgba(0,191,255,0.08); } .card-header.machine::after { background:linear-gradient(90deg,#00bfff,transparent); }
+  .step-icon { width:38px; height:38px; display:flex; align-items:center; justify-content:center; font-size:18px; border:1px solid var(--border); background:var(--bg); flex-shrink:0; }
+  .step-id { font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--text-dim); letter-spacing:1px; }
+  .step-title { font-family:'Rajdhani',sans-serif; font-size:16px; font-weight:700; letter-spacing:1px; line-height:1.2; }
+  .card-body { padding:16px 18px; }
+  .info-row { display:flex; gap:8px; margin-bottom:9px; align-items:flex-start; }
+  .info-label { font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--text-dim); letter-spacing:1px; min-width:75px; padding-top:1px; text-transform:uppercase; }
+  .info-value { font-size:12px; color:var(--text); line-height:1.5; flex:1; }
+  .info-value.highlight { color:var(--accent); font-weight:600; }
+  .tags { display:flex; flex-wrap:wrap; gap:5px; margin-top:10px; }
+  .tag { padding:3px 9px; font-family:'Share Tech Mono',monospace; font-size:9px; background:var(--bg); border:1px solid var(--border); color:var(--text-dim); }
+  .tag.warn { border-color:#ff6b35; color:#ff8c5a; background:rgba(255,107,53,0.05); }
+  .tag.ok { border-color:#39ff14; color:#6fff4a; background:rgba(57,255,20,0.05); }
+  .tag.info { border-color:#00d4ff; color:#4de4ff; background:rgba(0,212,255,0.05); }
+  .line-layout { background:var(--panel); border:1px solid var(--border); padding:20px; margin-bottom:20px; overflow-x:auto; }
+  .line-title { font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:2px; color:var(--accent2); margin-bottom:16px; text-transform:uppercase; }
+  .process-line { display:flex; align-items:center; gap:0; min-width:max-content; }
+  .pl-step { display:flex; flex-direction:column; align-items:center; gap:5px; }
+  .pl-box { width:80px; height:55px; display:flex; flex-direction:column; align-items:center; justify-content:center; border:1px solid; font-family:'Rajdhani',sans-serif; font-size:11px; font-weight:600; text-align:center; letter-spacing:0.5px; padding:4px; line-height:1.2; }
+  .pl-num { font-family:'Share Tech Mono',monospace; font-size:8px; color:var(--text-dim); }
+  .pl-arrow { width:24px; height:2px; background:var(--border); flex-shrink:0; position:relative; }
+  .pl-arrow::after { content:'▶'; position:absolute; right:-7px; top:-6px; font-size:7px; color:var(--text-dim); }
+  .active-indicator { width:6px; height:6px; background:var(--accent3); border-radius:50%; display:inline-block; animation:pulse 1.5s ease-in-out infinite; margin-right:5px; }
+  @keyframes pulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
+  .qc-table { width:100%; border-collapse:collapse; font-size:12px; margin-top:10px; }
+  .qc-table th { text-align:left; padding:9px 12px; font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:1px; color:var(--text-dim); border-bottom:1px solid var(--border); text-transform:uppercase; }
+  .qc-table td { padding:9px 12px; border-bottom:1px solid rgba(30,45,80,0.5); color:var(--text); vertical-align:top; line-height:1.5; }
+  .qc-table tr:hover td { background:rgba(0,212,255,0.03); }
+  .status-dot { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:5px; }
+  .s-daily{background:#39ff14} .s-weekly{background:#00d4ff} .s-monthly{background:#ffd700} .s-yearly{background:#ff6b35}
+  @media(max-width:600px){ .main{padding:14px 16px} header{padding:14px 16px} .nav-tabs{padding:0 10px} .header-badges{display:none} }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="header-title">⚙ Surface Treatment Factory</div>
+    <div class="header-sub">PROCESS LAYOUT — STEP BY STEP REFERENCE GUIDE</div>
+  </div>
+  <div class="header-badges">
+    <div class="badge"><span class="active-indicator"></span>16 PROCESS LINES</div>
+    <div class="badge">4 MAIN SECTORS</div>
+    <div class="badge">CHINA FACTORY STD</div>
+  </div>
+</header>
+
+<div class="nav-tabs">
+  <button class="tab-btn active" onclick="showTab('overview',this)"><span class="tab-num">00</span>Overview</button>
+  <button class="tab-btn" onclick="showTab('pre',this)"><span class="tab-num">01</span>Pre-Treatment</button>
+  <button class="tab-btn" onclick="showTab('plating',this)"><span class="tab-num">02</span>Plating Zone</button>
+  <button class="tab-btn" onclick="showTab('post',this)"><span class="tab-num">03</span>Post-Treatment</button>
+  <button class="tab-btn" onclick="showTab('machine',this)"><span class="tab-num">04</span>Machines & Tanks</button>
+  <button class="tab-btn" onclick="showTab('qc',this)"><span class="tab-num">05</span>Quality Control</button>
+  <button class="tab-btn" onclick="showTab('env',this)"><span class="tab-num">06</span>Environmental</button>
+</div>
+
+<div class="main">
+
+<!-- ===== OVERVIEW ===== -->
+<div id="tab-overview" class="section active">
+  <div class="section-head">
+    <h2>Factory Layout — Full Process Flow</h2>
+    <p>Parts enter from Receiving → Pre-Treatment → Plating → Post-Treatment → QC → Shipping. Waste streams are captured and treated throughout the line.</p>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(255,107,53,0.3);border-color:#ff6b35;"></div>Pre-Treatment</div>
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(0,212,255,0.3);border-color:#00d4ff;"></div>Plating Zone</div>
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(57,255,20,0.3);border-color:#39ff14;"></div>Post-Treatment</div>
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(255,215,0,0.3);border-color:#ffd700;"></div>Finishing / QC</div>
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(148,0,211,0.3);border-color:#9400d3;"></div>Waste Treatment</div>
+  </div>
+  <div class="factory-map">
+    <div class="map-title">Full Factory Process Flow</div>
+    <div class="flow-zone">
+      <div class="zone-label">ENTRY</div>
+      <div class="flow-steps">
+        <div class="flow-step"><div class="step-box zone-finish">📦 RECEIVING</div><div class="step-num">PARTS IN</div></div>
+        <div class="arrow-right"></div>
+        <div class="flow-step"><div class="step-box zone-finish">🔩 RACKING</div><div class="step-num">FIXTURE</div></div>
+        <div class="arrow-right"></div>
+        <div class="flow-step"><div class="step-box zone-pre">🔥 DEGREASING</div><div class="step-num">PRE-01</div></div>
+        <div class="arrow-right"></div>
+        <div class="flow-step"><div class="step-box zone-pre">💧 RINSE ×2</div><div class="step-num">PRE-02</div></div>
+      </div>
+    </div>
+    <div class="flow-zone">
+      <div class="zone-label" style="color:#ff8c5a;">PRE-TREAT</div>
+      <div class="flow-steps">
+        <div class="flow-step"><div class="step-box zone-pre">⚗️ ACID PICKLE</div><div class="step-num">PRE-03</div></div>
+        <div class="arrow-right"></div>
+        <div class="flow-step"><div class="step-box zone-pre">💧 RINSE ×2</div><div class="step-num">PRE-04</div></div>
+        <div class="arrow-right"></div>
+        <div class="flow-step"><div class="step-box zone-pre">⚙️ ACTIVATION</div><div class="step-num">PRE-05</div></div>
+        <div class="arrow-right"></div>
+        <div class="flow-step"><div class="step-box zone-pre">🫧 ULTRASONIC</div><div class="step-num">PRE-06*</div></div>
+      </div>
+    </div>
+    <div class="flow-zone">
+      <div class="zone-label" style="color:#4de4ff;">PLATING</div>
+      <div class="flow-steps">
+        <div class="flow-step"><div class="step-box zone-plate">⚡ STRIKE BATH</div><div class="step-num">PL-01</div></div>
+        <div class="arrow-right"></div>
+        <div class="flow-step"><div class="step-box zone-plate">🔋 MAIN PLATE</div><div class="step-num">PL-02</div></div>
+        <div class="arrow-right"></div>
+        <div class="flow-step"><div class="step-box zone-plate">💧 DRAG-OUT</div><div class="step-num">PL-03</div></div>
+        <div class="arrow-right"></div>
+        <div class="flow-step"><div class="step-box zone-plate">💧 RINSE ×3</div><div class="step-num">PL-04</div></div>
+      </div>
+    </div>
+    <div class="flow-zone">
+      <div class="zone-label" style="color:#6fff4a;">POST</div>
+      <div class="flow-steps">
+        <div class="flow-step"><div class="step-box zone-post">🛡️ PASSIVATE</div><div class="step-num">POST-01</div></div>
+        <div class="arrow-right"></div>
+        <div class="flow-step"><div class="step-box zone-post">💧 FINAL RINSE</div><div class="step-num">POST-02</div></div>
+        <div class="arrow-right"></div>
+        <div class="flow-step"><div class="step-box zone-post">🔥 DRYING OVEN</div><div class="step-num">POST-03</div></div>
+        <div class="arrow-right"></div>
+        <div class="flow-step"><div class="step-box zone-post">⚛️ DE-HYDROGEN</div><div class="step-num">POST-04*</div></div>
+      </div>
+    </div>
+    <div class="flow-zone">
+      <div class="zone-label" style="color:#ffe44d;">QC / OUT</div>
+      <div class="flow-steps">
+        <div class="flow-step"><div class="step-box zone-finish">🔍 INSPECTION</div><div class="step-num">QC-01</div></div>
+        <div class="arrow-right"></div>
+        <div class="flow-step"><div class="step-box zone-finish">📐 THICKNESS</div><div class="step-num">QC-02</div></div>
+        <div class="arrow-right"></div>
+        <div class="flow-step"><div class="step-box zone-finish">🧪 SALT SPRAY</div><div class="step-num">QC-03</div></div>
+        <div class="arrow-right"></div>
+        <div class="flow-step"><div class="step-box zone-finish">📦 SHIPPING</div><div class="step-num">OUT</div></div>
+      </div>
+    </div>
+    <div class="flow-zone">
+      <div class="zone-label" style="color:#b84de0;">WASTE</div>
+      <div class="flow-steps" style="background:rgba(148,0,211,0.03);">
+        <div class="flow-step"><div class="step-box zone-waste">☣️ COLLECTION</div><div class="step-num">W-01</div></div>
+        <div class="arrow-right"></div>
+        <div class="flow-step"><div class="step-box zone-waste">⚗️ NEUTRALIZE</div><div class="step-num">W-02</div></div>
+        <div class="arrow-right"></div>
+        <div class="flow-step"><div class="step-box zone-waste">🔬 FILTER/SETTLE</div><div class="step-num">W-03</div></div>
+        <div class="arrow-right"></div>
+        <div class="flow-step"><div class="step-box zone-waste">✅ DISCHARGE</div><div class="step-num">W-04</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PRE-TREATMENT ===== -->
+<div id="tab-pre" class="section">
+  <div class="section-head">
+    <h2>Zone 01 — Pre-Treatment</h2>
+    <p>Before any plating begins, the surface must be completely clean and chemically activated. Any oil, rust, or oxide will cause the coating to fail. This zone is most critical for adhesion quality.</p>
+  </div>
+  <div class="detail-grid">
+    <div class="detail-card">
+      <div class="card-header pre"><div class="step-icon">🔩</div><div><div class="step-id">STEP PRE-00</div><div class="step-title">Receiving & Racking</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Parts received, inspected for defects, then mounted onto racks or loaded into barrels for processing through the line.</div></div>
+        <div class="info-row"><div class="info-label">Equipment</div><div class="info-value">Titanium racks, plastic/steel barrels, copper hooks, crane or hoist system</div></div>
+        <div class="info-row"><div class="info-label">Key Points</div><div class="info-value">Rack contact points are masked to prevent unplated spots. Part orientation affects current distribution.</div></div>
+        <div class="tags"><div class="tag ok">VISUAL CHECK</div><div class="tag info">BARREL OR RACK</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header pre"><div class="step-icon">🔥</div><div><div class="step-id">STEP PRE-01</div><div class="step-title">Degreasing / Cleaning</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Remove oils, grease, cutting fluids, fingerprints, and stamping lubricants from the metal surface.</div></div>
+        <div class="info-row"><div class="info-label">Chemical</div><div class="info-value highlight">Alkaline cleaner (NaOH-based), 40–70°C, pH 10–13</div></div>
+        <div class="info-row"><div class="info-label">Method</div><div class="info-value">Soak or electrolytic. Electrolytic is more powerful — gas bubbles scrub the surface mechanically.</div></div>
+        <div class="info-row"><div class="info-label">Time</div><div class="info-value">5–15 min soak; 2–5 min electrolytic</div></div>
+        <div class="tags"><div class="tag warn">HOT SOLUTION</div><div class="tag info">HEATED TANK</div><div class="tag">BLOWER AGITATION</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header pre"><div class="step-icon">💧</div><div><div class="step-id">STEP PRE-02</div><div class="step-title">Rinse After Degreasing</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Wash off alkaline cleaner to prevent contaminating the next bath. Carry-over causes chemical imbalance.</div></div>
+        <div class="info-row"><div class="info-label">Method</div><div class="info-value highlight">Double counter-flow rinse (2 tanks) — clean water in Tank 2 overflows into Tank 1 continuously</div></div>
+        <div class="info-row"><div class="info-label">Water</div><div class="info-value">Tap or DI water. Conductivity monitored to know when to replace.</div></div>
+        <div class="tags"><div class="tag ok">COUNTER-FLOW</div><div class="tag info">2 RINSE TANKS</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header pre"><div class="step-icon">⚗️</div><div><div class="step-id">STEP PRE-03</div><div class="step-title">Acid Pickling / Etching</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Remove rust, mill scale, and oxide layers. Leaves a chemically active, bare metal surface.</div></div>
+        <div class="info-row"><div class="info-label">Chemical</div><div class="info-value highlight">HCl or H₂SO₄, 5–30%, room temp or slightly heated</div></div>
+        <div class="info-row"><div class="info-label">Time</div><div class="info-value">1–10 min depending on oxide thickness. Over-pickling causes hydrogen embrittlement.</div></div>
+        <div class="info-row"><div class="info-label">Note</div><div class="info-value">Inhibitors added to slow base metal attack while still removing oxides.</div></div>
+        <div class="tags"><div class="tag warn">CORROSIVE ACID</div><div class="tag warn">EXHAUST REQUIRED</div><div class="tag">PP TANK</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header pre"><div class="step-icon">⚙️</div><div><div class="step-id">STEP PRE-04</div><div class="step-title">Activation / Pre-dip</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Final chemical activation just before plating. Removes last passivation layer and ensures maximum adhesion.</div></div>
+        <div class="info-row"><div class="info-label">Chemical</div><div class="info-value highlight">Dilute acid (same chemistry as plating bath) or specific activator solution</div></div>
+        <div class="info-row"><div class="info-label">Time</div><div class="info-value">30 sec to 2 min. Do NOT rinse after — parts go directly into plating bath.</div></div>
+        <div class="tags"><div class="tag warn">NO RINSE AFTER</div><div class="tag ok">LAST STEP BEFORE PLATE</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header pre"><div class="step-icon">🫧</div><div><div class="step-id">STEP PRE-05</div><div class="step-title">Ultrasonic Cleaning (Optional)</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">For complex-shaped parts, blind holes, or tight tolerances. Cavitation bubbles blast contamination from hard-to-reach areas.</div></div>
+        <div class="info-row"><div class="info-label">Frequency</div><div class="info-value highlight">20–40 kHz, combined with alkaline cleaner solution</div></div>
+        <div class="info-row"><div class="info-label">When Used</div><div class="info-value">Electronics, hydraulic fittings, precision parts with complex geometry</div></div>
+        <div class="tags"><div class="tag info">PRECISION PARTS</div><div class="tag">COMPLEX SHAPES</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PLATING ZONE ===== -->
+<div id="tab-plating" class="section">
+  <div class="section-head">
+    <h2>Zone 02 — Plating Zone</h2>
+    <p>The core of the factory. Metal ions are deposited onto the part by electrical current (electroplating) or chemical reaction (electroless). All 16 process lines from the presentation run through this zone.</p>
+  </div>
+  <div class="line-layout">
+    <div class="line-title">▶ STANDARD ELECTROPLATING LINE SEQUENCE</div>
+    <div class="process-line">
+      <div class="pl-step"><div class="pl-box" style="border-color:#ff6b35;color:#ff8c5a;background:rgba(255,107,53,0.08);">ACTIVATED PART</div><div class="pl-num">FROM PRE</div></div>
+      <div class="pl-arrow"></div>
+      <div class="pl-step"><div class="pl-box" style="border-color:#00d4ff;color:#4de4ff;background:rgba(0,212,255,0.08);">STRIKE BATH</div><div class="pl-num">PL-01</div></div>
+      <div class="pl-arrow"></div>
+      <div class="pl-step"><div class="pl-box" style="border-color:#00d4ff;color:#4de4ff;background:rgba(0,212,255,0.12);">MAIN PLATE BATH</div><div class="pl-num">PL-02</div></div>
+      <div class="pl-arrow"></div>
+      <div class="pl-step"><div class="pl-box" style="border-color:#00d4ff;color:#4de4ff;background:rgba(0,212,255,0.05);">DRAG-OUT RECOVERY</div><div class="pl-num">PL-03</div></div>
+      <div class="pl-arrow"></div>
+      <div class="pl-step"><div class="pl-box" style="border-color:#00d4ff;color:#4de4ff;background:rgba(0,212,255,0.05);">RINSE ×3</div><div class="pl-num">PL-04</div></div>
+      <div class="pl-arrow"></div>
+      <div class="pl-step"><div class="pl-box" style="border-color:#39ff14;color:#6fff4a;background:rgba(57,255,20,0.08);">POST TREATMENT</div><div class="pl-num">TO POST</div></div>
+    </div>
+  </div>
+  <div class="detail-grid">
+    <div class="detail-card">
+      <div class="card-header plate"><div class="step-icon">⚡</div><div><div class="step-id">STEP PL-01</div><div class="step-title">Strike Bath</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Thin high-current flash deposit to establish adhesion before the main bath. Without it, plating can peel.</div></div>
+        <div class="info-row"><div class="info-label">Current</div><div class="info-value highlight">High current density (2–3× normal) for short time (30 sec–2 min)</div></div>
+        <div class="info-row"><div class="info-label">Example</div><div class="info-value">Copper strike before nickel on steel; Wood's nickel strike before chrome on stainless steel</div></div>
+        <div class="tags"><div class="tag info">ADHESION LAYER</div><div class="tag">HIGH CURRENT</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header plate"><div class="step-icon">🔋</div><div><div class="step-id">STEP PL-02A</div><div class="step-title">Zinc Plating Bath</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Most common industrial plating — corrosion protection for steel hardware, fasteners, automotive parts.</div></div>
+        <div class="info-row"><div class="info-label">Chemistry</div><div class="info-value highlight">Alkaline zinc (ZnO + NaOH) or acid zinc chloride bath</div></div>
+        <div class="info-row"><div class="info-label">Parameters</div><div class="info-value">Zn²⁺: 8–15 g/L | Current: 1–4 A/dm² | Temp: 20–35°C</div></div>
+        <div class="info-row"><div class="info-label">Thickness</div><div class="info-value">5–25 microns standard; 25+ heavy-duty</div></div>
+        <div class="tags"><div class="tag ok">MOST COMMON</div><div class="tag">BARREL / RACK</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header plate"><div class="step-icon">🔩</div><div><div class="step-id">STEP PL-02B</div><div class="step-title">Nickel Plating Bath</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Decorative finish + corrosion barrier. Often used as undercoat before chrome plating.</div></div>
+        <div class="info-row"><div class="info-label">Chemistry</div><div class="info-value highlight">Watts bath: NiSO₄ + NiCl₂ + H₃BO₃, pH 3.5–4.5, 45–60°C</div></div>
+        <div class="info-row"><div class="info-label">Thickness</div><div class="info-value">5–50 µm decorative; up to 500 µm engineering nickel</div></div>
+        <div class="tags"><div class="tag info">DECORATIVE</div><div class="tag">UNDER-LAYER</div><div class="tag warn">HEATED</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header plate"><div class="step-icon">💎</div><div><div class="step-id">STEP PL-02C</div><div class="step-title">Hard Chrome / Decorative Chrome</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Hard chrome: extreme wear resistance for hydraulics, molds. Decorative chrome: bright shiny surface over nickel.</div></div>
+        <div class="info-row"><div class="info-label">Chemistry</div><div class="info-value highlight">CrO₃ + H₂SO₄ catalyst, 45–55°C. Cr6⁺ — toxic, heavily regulated.</div></div>
+        <div class="info-row"><div class="info-label">Hard Chrome</div><div class="info-value">25–500+ µm | 65–70 HRC hardness | Excellent wear + release</div></div>
+        <div class="info-row"><div class="info-label">Dec. Chrome</div><div class="info-value">0.1–0.5 µm only — purely for appearance over nickel base</div></div>
+        <div class="tags"><div class="tag warn">Cr6⁺ HAZARDOUS</div><div class="tag warn">HEAVY EXHAUST</div><div class="tag info">Cr3⁺ OPTION</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header plate"><div class="step-icon">🧲</div><div><div class="step-id">STEP PL-02D</div><div class="step-title">Electroless Nickel Plating</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">No electricity needed — chemical auto-catalytic reaction deposits perfectly uniform nickel inside holes and cavities.</div></div>
+        <div class="info-row"><div class="info-label">Chemistry</div><div class="info-value highlight">NiSO₄ + sodium hypophosphite (reducing agent), 85–92°C, pH 4.5–5.5</div></div>
+        <div class="info-row"><div class="info-label">Key Benefit</div><div class="info-value">100% uniform thickness everywhere — critical for precision parts, valves, molds</div></div>
+        <div class="info-row"><div class="info-label">Hardness</div><div class="info-value">As-plated 48–52 HRC; heat treated up to 68 HRC</div></div>
+        <div class="tags"><div class="tag ok">UNIFORM COVERAGE</div><div class="tag">NO ELECTRICITY</div><div class="tag warn">HIGH TEMP</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header plate"><div class="step-icon">🌡️</div><div><div class="step-id">STEP PL-02E</div><div class="step-title">Anodizing (Aluminum)</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Grows a thick aluminum oxide layer ON the part surface (not deposited). Makes aluminum harder, corrosion-resistant, and dyeable.</div></div>
+        <div class="info-row"><div class="info-label">Chemistry</div><div class="info-value highlight">H₂SO₄ 15–20%, 18–22°C, 12–18V DC. Hard anodize: 0°C, 50–100V.</div></div>
+        <div class="info-row"><div class="info-label">Process</div><div class="info-value">Anodize → Dye (optional color) → Seal (boiling DI water or nickel acetate)</div></div>
+        <div class="info-row"><div class="info-label">Thickness</div><div class="info-value">5–25 µm decorative; 25–100+ µm hard coat</div></div>
+        <div class="tags"><div class="tag info">ALUMINUM ONLY</div><div class="tag ok">COLORABLE</div><div class="tag">GROWS INWARD</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header plate"><div class="step-icon">🥫</div><div><div class="step-id">STEP PL-02F</div><div class="step-title">Phosphating (Zinc / Manganese / Iron)</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Creates a crystalline phosphate conversion coating on steel. Used as paint primer or wear/corrosion layer.</div></div>
+        <div class="info-row"><div class="info-label">Zinc Phos.</div><div class="info-value highlight">Heavy automotive prep for paint; thick crystal layer, grey color</div></div>
+        <div class="info-row"><div class="info-label">Manganese</div><div class="info-value">Dark grey; used on gears, engine parts for break-in wear resistance</div></div>
+        <div class="info-row"><div class="info-label">Iron Phos.</div><div class="info-value">Light coating, mainly for paint adhesion on sheet metal</div></div>
+        <div class="tags"><div class="tag">PAINT PREP</div><div class="tag ok">WEAR RESIST</div><div class="tag info">NO ELECTRICITY</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header plate"><div class="step-icon">💧</div><div><div class="step-id">STEP PL-03</div><div class="step-title">Drag-Out Recovery Tank</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Parts lifted from bath carry plating solution ("drag-out"). This still-rinse tank recovers that chemical before waste water.</div></div>
+        <div class="info-row"><div class="info-label">Function</div><div class="info-value highlight">Concentrated drag-out is pumped BACK into the main bath — saves chemicals and reduces waste load</div></div>
+        <div class="info-row"><div class="info-label">Benefit</div><div class="info-value">Recovers 70–90% of drag-out value; critical for expensive metals (silver, gold, tin)</div></div>
+        <div class="tags"><div class="tag ok">COST SAVING</div><div class="tag ok">WASTE REDUCTION</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== POST-TREATMENT ===== -->
+<div id="tab-post" class="section">
+  <div class="section-head">
+    <h2>Zone 03 — Post-Treatment & Finishing</h2>
+    <p>After plating, parts need sealing, passivation, and drying to lock in corrosion protection. High-strength steel parts also need baking to eliminate hydrogen embrittlement risk.</p>
+  </div>
+  <div class="detail-grid">
+    <div class="detail-card">
+      <div class="card-header post"><div class="step-icon">🛡️</div><div><div class="step-id">STEP POST-01</div><div class="step-title">Chromate Conversion / Passivation</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Applied over zinc or cadmium plating to dramatically increase corrosion resistance. The chromate film self-heals microscopic scratches.</div></div>
+        <div class="info-row"><div class="info-label">Types</div><div class="info-value highlight">Clear/Blue (least) → Yellow/Iridescent → Olive/Thick (maximum protection)</div></div>
+        <div class="info-row"><div class="info-label">Chemistry</div><div class="info-value">Trivalent Cr3⁺ (RoHS-compliant, modern) or hexavalent Cr6⁺ (older, restricted)</div></div>
+        <div class="info-row"><div class="info-label">Salt Spray</div><div class="info-value">Zinc alone: 24–72 hrs | + Clear passivate: 120–200 hrs | + Thick passivate: 400–500 hrs</div></div>
+        <div class="tags"><div class="tag ok">SELF-HEALING</div><div class="tag info">Cr3⁺ PREFERRED</div><div class="tag warn">Cr6⁺ RESTRICTED</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header post"><div class="step-icon">💦</div><div><div class="step-id">STEP POST-02</div><div class="step-title">Final Rinse (DI Water)</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Removes all chemical residue. DI water leaves no mineral stains or spots on the finished surface.</div></div>
+        <div class="info-row"><div class="info-label">Water Quality</div><div class="info-value highlight">Conductivity &lt;50 µS/cm. Tap water leaves calcium/mineral stains on bright surfaces.</div></div>
+        <div class="info-row"><div class="info-label">Cascade</div><div class="info-value">2–3 counter-flow tanks. Last tank always uses fresh DI. Spent water routed to waste treatment.</div></div>
+        <div class="tags"><div class="tag ok">DI WATER</div><div class="tag info">SPOT-FREE</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header post"><div class="step-icon">🔥</div><div><div class="step-id">STEP POST-03</div><div class="step-title">Drying Oven</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Removes all moisture to prevent white rust (zinc) or staining. Also cures passivate films and sealer coatings.</div></div>
+        <div class="info-row"><div class="info-label">Temp</div><div class="info-value highlight">60–80°C for zinc/chromate. Do NOT exceed 70°C for Cr3⁺ passivate — cracks the film.</div></div>
+        <div class="info-row"><div class="info-label">Method</div><div class="info-value">Centrifuge spin-dryer for barrel parts; conveyor oven for rack parts</div></div>
+        <div class="info-row"><div class="info-label">Time</div><div class="info-value">10–20 minutes at temperature</div></div>
+        <div class="tags"><div class="tag warn">TEMP CRITICAL</div><div class="tag">CONVEYOR / BATCH</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header post"><div class="step-icon">⚛️</div><div><div class="step-id">STEP POST-04</div><div class="step-title">De-Hydrogenation (Baking)</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">High-strength steel absorbs hydrogen during acid pickling and plating. This causes embrittlement — cracks under load. Baking drives the hydrogen out.</div></div>
+        <div class="info-row"><div class="info-label">Parameters</div><div class="info-value highlight">190–210°C for minimum 8 hours, within 4 hours of plating (ASTM B633 / ISO 9587)</div></div>
+        <div class="info-row"><div class="info-label">Who Needs It</div><div class="info-value">High-tensile bolts, springs, aerospace fasteners — any hardened steel &gt;39 HRC</div></div>
+        <div class="tags"><div class="tag warn">SAFETY CRITICAL</div><div class="tag info">ASTM B633</div><div class="tag">HIGH STRENGTH ONLY</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header post"><div class="step-icon">🧴</div><div><div class="step-id">STEP POST-05</div><div class="step-title">Topcoat / Sealer (Optional)</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Organic sealer or wax applied over passivate to further increase corrosion performance and improve appearance.</div></div>
+        <div class="info-row"><div class="info-label">Types</div><div class="info-value highlight">Silicate sealer, water-based lacquer, wax topcoat, or lubricant coating for fasteners</div></div>
+        <div class="info-row"><div class="info-label">Benefit</div><div class="info-value">Adds 200–400 hrs extra salt spray protection. Adds lubricity to threaded fasteners.</div></div>
+        <div class="tags"><div class="tag ok">EXTRA PROTECTION</div><div class="tag info">DIPPED OR SPRAYED</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header post"><div class="step-icon">🔩</div><div><div class="step-id">STEP POST-06</div><div class="step-title">Unracking / Demasking</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Parts removed from racks, masked areas uncovered, parts separated from tooling fixtures.</div></div>
+        <div class="info-row"><div class="info-label">Steps</div><div class="info-value">Remove rack tape/plugs → Visual check for rack marks → Rework decision → Send to QC</div></div>
+        <div class="info-row"><div class="info-label">Rework</div><div class="info-value highlight">Parts with adhesion failure can be stripped and re-processed from the beginning</div></div>
+        <div class="tags"><div class="tag">MANUAL STEP</div><div class="tag ok">QC HANDOFF</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MACHINES ===== -->
+<div id="tab-machine" class="section">
+  <div class="section-head">
+    <h2>Zone 04 — Machines & Tank Equipment</h2>
+    <p>Every tank requires supporting equipment to maintain correct process conditions — heaters, blowers, PLC automation, and fume extraction are the mechanical backbone of the factory.</p>
+  </div>
+  <div class="detail-grid">
+    <div class="detail-card">
+      <div class="card-header machine"><div class="step-icon">🏗️</div><div><div class="step-id">EQUIPMENT 01</div><div class="step-title">Tank Design & Layout</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Materials</div><div class="info-value highlight">PP for acid tanks | PVC for mild alkaline | Steel + rubber lining for hot alkaline | Steel for chrome</div></div>
+        <div class="info-row"><div class="info-label">Dimensions</div><div class="info-value">Sized to fit largest workpiece with 150mm clearance all sides. Typically 500–3000L volume.</div></div>
+        <div class="info-row"><div class="info-label">Layout</div><div class="info-value">Linear (in-line) or U-shape. Tanks numbered and color-coded. Compatible chemicals grouped together.</div></div>
+        <div class="info-row"><div class="info-label">Spill</div><div class="info-value">Secondary containment bund at 110% capacity around each tank to catch leaks.</div></div>
+        <div class="tags"><div class="tag warn">CHEMICAL COMPATIBLE</div><div class="tag ok">SECONDARY CONTAIN</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header machine"><div class="step-icon">🌡️</div><div><div class="step-id">EQUIPMENT 02</div><div class="step-title">Heaters</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Immersion</div><div class="info-value highlight">Titanium or PTFE-coated elements. Used in alkaline, neutral, and some acid baths.</div></div>
+        <div class="info-row"><div class="info-label">Quartz</div><div class="info-value">Used in HF or highly oxidizing solutions where titanium would corrode. Fragile — handle carefully.</div></div>
+        <div class="info-row"><div class="info-label">Steam</div><div class="info-value">External steam coil or heat exchanger for large-volume hot tanks (cleaner, phosphate)</div></div>
+        <div class="info-row"><div class="info-label">Control</div><div class="info-value">Thermostat + PLC controls temperature to ±2°C. Over-temp alarm prevents bath degradation.</div></div>
+        <div class="tags"><div class="tag warn">Ti or PTFE LINED</div><div class="tag info">±2°C CONTROL</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header machine"><div class="step-icon">💨</div><div><div class="step-id">EQUIPMENT 03</div><div class="step-title">Blowers & Agitation</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Agitation replenishes metal ions at the part surface, removes trapped hydrogen gas, and ensures even coating distribution.</div></div>
+        <div class="info-row"><div class="info-label">Air Agitation</div><div class="info-value highlight">Low-pressure air through PVC perforated pipe at tank bottom. Simple and effective.</div></div>
+        <div class="info-row"><div class="info-label">Cathode Rod</div><div class="info-value">Mechanical rack oscillation — most uniform plating distribution method</div></div>
+        <div class="info-row"><div class="info-label">Pump Circ.</div><div class="info-value">Pump + filter unit circulates solution — dual purpose: agitation + filtration</div></div>
+        <div class="tags"><div class="tag ok">UNIFORM DEPOSIT</div><div class="tag">PUMP+FILTER COMBO</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header machine"><div class="step-icon">🏗️</div><div><div class="step-id">EQUIPMENT 04</div><div class="step-title">Cranes & Hoists</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Manual</div><div class="info-value">Monorail or gantry crane — operator controls movement between tanks. Flexible, lower cost.</div></div>
+        <div class="info-row"><div class="info-label">Automatic</div><div class="info-value highlight">PLC-controlled auto hoist — programmed sequence, timed immersion. Common in high-volume lines.</div></div>
+        <div class="info-row"><div class="info-label">Capacity</div><div class="info-value">50–500 kg per lift. SWL (Safe Working Load) rated and certified.</div></div>
+        <div class="info-row"><div class="info-label">Material</div><div class="info-value">FRP (fiberglass) or PVC-coated steel to resist chemical splash</div></div>
+        <div class="tags"><div class="tag info">PLC AUTO OPTION</div><div class="tag ok">SWL RATED</div><div class="tag">FRP MATERIAL</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header machine"><div class="step-icon">🖥️</div><div><div class="step-id">EQUIPMENT 05</div><div class="step-title">PLC Control System</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Function</div><div class="info-value">Manages the entire line — timing, temperature, current, crane movement, alarms, and data logging.</div></div>
+        <div class="info-row"><div class="info-label">Controls</div><div class="info-value highlight">Rectifier current/voltage | Bath temperature | Tank levels | Crane sequence | Alarm triggers</div></div>
+        <div class="info-row"><div class="info-label">HMI</div><div class="info-value">Touchscreen interface shows all process parameters in real time. Recipe storage for different parts.</div></div>
+        <div class="info-row"><div class="info-label">Rectifier</div><div class="info-value">DC power supply providing precise current. Typically 0–12V, up to thousands of amps for large lines.</div></div>
+        <div class="tags"><div class="tag info">SIEMENS / OMRON</div><div class="tag ok">DATA LOGGING</div><div class="tag">RECIPE STORAGE</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header machine"><div class="step-icon">🌬️</div><div><div class="step-id">EQUIPMENT 06</div><div class="step-title">Exhaust / Fume Extraction</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">Captures acid mist, chromic acid fumes, alkaline spray, and hydrogen gas before they reach workers.</div></div>
+        <div class="info-row"><div class="info-label">Design</div><div class="info-value highlight">Slot exhaust hoods at tank rim level, PP/FRP ductwork, fume scrubber, and exhaust fan</div></div>
+        <div class="info-row"><div class="info-label">Scrubber</div><div class="info-value">Wet scrubber uses water/alkali spray to neutralize acid fumes before discharge to atmosphere</div></div>
+        <div class="info-row"><div class="info-label">Materials</div><div class="info-value">PP ducts for acid | Stainless steel for hot alkaline | PVC for general use</div></div>
+        <div class="tags"><div class="tag warn">MANDATORY SAFETY</div><div class="tag ok">WET SCRUBBER</div><div class="tag warn">CHROME CRITICAL</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== QC ===== -->
+<div id="tab-qc" class="section">
+  <div class="section-head">
+    <h2>Zone 05 — Quality Control</h2>
+    <p>QC operates at three levels: bath monitoring (chemistry), in-process checks (during plating), and final inspection (finished parts). Failure at any level means rework or scrap.</p>
+  </div>
+  <div class="detail-grid">
+    <div class="detail-card" style="grid-column:1/-1;">
+      <div class="card-header finish"><div class="step-icon">📅</div><div><div class="step-id">QC SCHEDULE</div><div class="step-title">Testing Frequency Matrix</div></div></div>
+      <div class="card-body">
+        <table class="qc-table">
+          <thead><tr><th>Test Item</th><th>Method</th><th>Frequency</th><th>Acceptable Range</th></tr></thead>
+          <tbody>
+            <tr><td>Bath pH</td><td>pH meter / titration</td><td><span class="status-dot s-daily"></span>Daily / Each shift</td><td>Per bath spec (e.g., zinc: 5.5–6.5)</td></tr>
+            <tr><td>Metal ion concentration</td><td>Titration / Hull cell</td><td><span class="status-dot s-daily"></span>Daily</td><td>Per bath spec (e.g., Zn²⁺ 8–15 g/L)</td></tr>
+            <tr><td>Coating thickness</td><td>XRF / Magnetic / Beta</td><td><span class="status-dot s-daily"></span>Per batch</td><td>Per customer spec (e.g., 8–12 µm)</td></tr>
+            <tr><td>Visual / Appearance</td><td>Naked eye / 10× loupe</td><td><span class="status-dot s-daily"></span>100% of parts</td><td>No pits, blisters, burns, bare spots</td></tr>
+            <tr><td>Adhesion (tape test)</td><td>ASTM D3359 tape pull</td><td><span class="status-dot s-weekly"></span>Weekly / per lot</td><td>No peeling — Class 5B (0% removal)</td></tr>
+            <tr><td>Salt spray corrosion</td><td>ASTM B117 salt spray chamber</td><td><span class="status-dot s-weekly"></span>Per lot or change</td><td>No red rust at 120h min (zinc + clear passivate)</td></tr>
+            <tr><td>Hull cell panel test</td><td>Hull cell 267mL, 1–5A</td><td><span class="status-dot s-weekly"></span>Weekly</td><td>Full brightness, no burning at edges</td></tr>
+            <tr><td>Bath additive analysis</td><td>Titration / HPLC</td><td><span class="status-dot s-monthly"></span>Monthly</td><td>Brightener / wetter within spec range</td></tr>
+            <tr><td>Equipment calibration</td><td>Certified instruments</td><td><span class="status-dot s-monthly"></span>Monthly</td><td>Thickness gauge, pH meter, temp probe</td></tr>
+            <tr><td>Full process audit</td><td>Internal / 3rd party</td><td><span class="status-dot s-yearly"></span>Yearly</td><td>All parameters in specification range</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header finish"><div class="step-icon">📐</div><div><div class="step-id">QC TOOL 01</div><div class="step-title">Thickness Testing</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">XRF Gun</div><div class="info-value highlight">X-Ray Fluorescence — non-destructive, measures thickness and coating composition. Gold standard.</div></div>
+        <div class="info-row"><div class="info-label">Magnetic</div><div class="info-value">For non-magnetic coatings on steel (zinc, nickel). Fast, portable, cheap.</div></div>
+        <div class="info-row"><div class="info-label">Eddy Current</div><div class="info-value">For non-conductive coatings on non-magnetic metals (anodize on aluminum)</div></div>
+        <div class="tags"><div class="tag ok">XRF PREFERRED</div><div class="tag info">NON-DESTRUCTIVE</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header finish"><div class="step-icon">🧂</div><div><div class="step-id">QC TOOL 02</div><div class="step-title">Salt Spray Chamber</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Standard</div><div class="info-value highlight">ASTM B117 — 5% NaCl mist at 35°C. Most common corrosion test for plated parts.</div></div>
+        <div class="info-row"><div class="info-label">Pass Criteria</div><div class="info-value">No white rust (zinc corrosion) before spec hours; no red rust (base steel) at any point</div></div>
+        <div class="info-row"><div class="info-label">Typical Specs</div><div class="info-value">Automotive: 480–1000 hrs | Industrial: 120–240 hrs | Basic: 24–72 hrs</div></div>
+        <div class="tags"><div class="tag warn">DESTRUCTIVE TEST</div><div class="tag info">ASTM B117</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ENVIRONMENTAL ===== -->
+<div id="tab-env" class="section">
+  <div class="section-head">
+    <h2>Zone 06 — Environmental Safety & Waste Treatment</h2>
+    <p>Surface treatment factories generate hazardous liquid waste. Chinese regulations (GB 21900-2008) set strict discharge limits. Proper waste water treatment is both a legal requirement and an operational necessity.</p>
+  </div>
+  <div class="detail-grid">
+    <div class="detail-card">
+      <div class="card-header waste"><div class="step-icon">⚗️</div><div><div class="step-id">WASTE 01</div><div class="step-title">Chromium Reduction (Cr6⁺ → Cr3⁺)</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Why Critical</div><div class="info-value highlight">Hexavalent Cr6⁺ is a known carcinogen — most hazardous waste stream in a plating factory. Must be destroyed before discharge.</div></div>
+        <div class="info-row"><div class="info-label">Process</div><div class="info-value">Lower pH to 2–3 with H₂SO₄ → Add sodium metabisulfite → Cr6⁺ reduced to Cr3⁺ → Raise pH to 8–9 → Cr3⁺ precipitates as Cr(OH)₃ sludge</div></div>
+        <div class="info-row"><div class="info-label">Discharge</div><div class="info-value">Cr3⁺ &lt;0.5 mg/L | Cr6⁺ &lt;0.1 mg/L (China GB 21900)</div></div>
+        <div class="tags"><div class="tag warn">MOST HAZARDOUS</div><div class="tag ok">REDUCE FIRST</div><div class="tag warn">SLUDGE = HAZWASTE</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header waste"><div class="step-icon">☣️</div><div><div class="step-id">WASTE 02</div><div class="step-title">Cyanide Destruction</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Source</div><div class="info-value">Silver plating, some gold plating, and older copper strike baths use cyanide chemistry. Extremely toxic.</div></div>
+        <div class="info-row"><div class="info-label">Process</div><div class="info-value highlight">Alkaline chlorination: pH &gt;11 → sodium hypochlorite → CN⁻ oxidized to CNO⁻ → more hypochlorite → CNO⁻ → N₂ + CO₂</div></div>
+        <div class="info-row"><div class="info-label">Warning</div><div class="info-value">CN⁻ &lt;0.5 mg/L discharge limit. NEVER mix cyanide with acid — produces HCN gas (lethal).</div></div>
+        <div class="tags"><div class="tag warn">LETHAL — SEGREGATE</div><div class="tag ok">ALKALINE DESTROY</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header waste"><div class="step-icon">⚖️</div><div><div class="step-id">WASTE 03</div><div class="step-title">pH Adjustment & Metal Precipitation</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Purpose</div><div class="info-value">All metal ions (Ni²⁺, Zn²⁺, Cu²⁺) must be removed from rinse water by raising pH until they precipitate as metal hydroxides.</div></div>
+        <div class="info-row"><div class="info-label">Process</div><div class="info-value highlight">Neutralize to pH 8.5–10 using NaOH or lime milk → Metal ions precipitate → Add flocculant (PAM) → Settle in clarifier</div></div>
+        <div class="info-row"><div class="info-label">Discharge pH</div><div class="info-value">China GB 21900: pH 6–9 | Ni &lt;0.1, Zn &lt;1.5, Cu &lt;0.3 mg/L</div></div>
+        <div class="tags"><div class="tag ok">pH 6–9 TARGET</div><div class="tag info">FLOCCULANT ADDED</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header waste"><div class="step-icon">🏔️</div><div><div class="step-id">WASTE 04</div><div class="step-title">Sludge & Solid Waste Handling</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">What is it</div><div class="info-value">Settled metal hydroxide precipitate containing concentrated heavy metals — classified as hazardous waste.</div></div>
+        <div class="info-row"><div class="info-label">Processing</div><div class="info-value highlight">Filter press dewaters sludge → 30–50% solid "filter cake" → Sealed drums → Licensed hazardous waste contractor disposes</div></div>
+        <div class="info-row"><div class="info-label">Records</div><div class="info-value">Full chain of custody required by Chinese law. Cannot be buried or illegally dumped.</div></div>
+        <div class="tags"><div class="tag warn">HAZARDOUS WASTE</div><div class="tag ok">LICENSED DISPOSAL</div><div class="tag warn">RECORDS REQUIRED</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header waste"><div class="step-icon">📊</div><div><div class="step-id">REGULATION</div><div class="step-title">China Discharge Standards (GB 21900)</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">pH</div><div class="info-value highlight">6 – 9 (mandatory for all discharge)</div></div>
+        <div class="info-row"><div class="info-label">Cr6⁺</div><div class="info-value">≤ 0.1 mg/L (Standard A) | ≤ 0.2 mg/L (Standard B)</div></div>
+        <div class="info-row"><div class="info-label">Total Cr</div><div class="info-value">≤ 0.5 mg/L</div></div>
+        <div class="info-row"><div class="info-label">Nickel</div><div class="info-value">≤ 0.1 mg/L</div></div>
+        <div class="info-row"><div class="info-label">Zinc</div><div class="info-value">≤ 1.5 mg/L</div></div>
+        <div class="info-row"><div class="info-label">Cyanide</div><div class="info-value">≤ 0.5 mg/L</div></div>
+        <div class="info-row"><div class="info-label">COD</div><div class="info-value">≤ 80 mg/L</div></div>
+        <div class="tags"><div class="tag warn">LEGAL REQUIREMENT</div><div class="tag info">GB 21900-2008</div></div>
+      </div>
+    </div>
+    <div class="detail-card">
+      <div class="card-header waste"><div class="step-icon">🧯</div><div><div class="step-id">SAFETY</div><div class="step-title">Worker Safety & PPE</div></div></div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-label">Acid Zones</div><div class="info-value highlight">Rubber apron, acid-resistant gloves, face shield, rubber boots, chemical goggles</div></div>
+        <div class="info-row"><div class="info-label">Chrome Zone</div><div class="info-value">Full enclosure preferred — Cr6⁺ mist is carcinogenic. Half-face respirator with P100+OV cartridge minimum.</div></div>
+        <div class="info-row"><div class="info-label">Emergency</div><div class="info-value">Eyewash station within 10 seconds of every tank. Emergency shower nearby. Baking soda (neutralizer) on hand.</div></div>
+        <div class="info-row"><div class="info-label">Signage</div><div class="info-value">GHS hazard labels on all tanks in Chinese and English. Emergency numbers posted.</div></div>
+        <div class="tags"><div class="tag warn">PPE MANDATORY</div><div class="tag ok">EYEWASH 10 SEC</div><div class="tag">GHS LABELS</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end .main -->
+
+<script>
+  function showTab(name, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
+</script>
+</body>
+</html>
